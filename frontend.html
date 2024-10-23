@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Detection Form</title>
+</head>
+<body>
+
+    <h2>Bot Detection Form</h2>
+
+    <form id="user-form">
+        <label for="name">Enter your name:</label><br>
+        <input type="text" id="name" placeholder="Enter your name" required><br><br>
+
+        <label for="email">Enter your email:</label><br>
+        <input type="email" id="email" placeholder="Enter your email" required><br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+
+    <p id="result"></p>
+
+    <script>
+        let mouseMovements = [];
+        let keystrokes = [];
+        let startTime = new Date();
+
+        // Capture mouse movements
+        document.addEventListener('mousemove', function(event) {
+            mouseMovements.push({x: event.clientX, y: event.clientY, time: new Date().getTime() - startTime.getTime()});
+        });
+
+        // Capture keypress events
+        document.addEventListener('keydown', function(event) {
+            keystrokes.push({key: event.key, time: new Date().getTime() - startTime.getTime()});
+        });
+
+        // On form submission, send data to the server
+        document.getElementById('user-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from submitting
+
+            let endTime = new Date();
+            let totalTime = endTime.getTime() - startTime.getTime();
+
+            let data = {
+                mouseMovements: mouseMovements,
+                keystrokes: keystrokes,
+                totalTime: totalTime
+            };
+
+            fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                document.getElementById("result").innerText = result.message; // Show result (Human/Bot)
+            });
+        });
+    </script>
+
+</body>
+</html>
